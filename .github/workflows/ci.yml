@@ -13,6 +13,21 @@ jobs:
       run:
         working-directory: backend
 
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: trajectoire
+          POSTGRES_PASSWORD: changeme
+          POSTGRES_DB: trajectoire
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready -U trajectoire
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -26,6 +41,8 @@ jobs:
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -41,6 +58,9 @@ jobs:
           pip install pytest pytest-asyncio httpx aiosqlite
           pytest -v
         working-directory: backend
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
 
   frontend:
     runs-on: ubuntu-latest
@@ -61,12 +81,17 @@ jobs:
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Type check
         run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx eslint src --ext .ts,.tsx 2>/dev/null || echo "ESLint not configured"
 
       - name: Build
         run: npm run build

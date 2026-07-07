@@ -3,8 +3,6 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
-from app.schemas.lap import LapRecordCreate, LapRecordRead
-
 
 class MaintenanceLogCreate(BaseModel):
     consumable: str

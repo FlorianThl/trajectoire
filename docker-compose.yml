@@ -16,7 +16,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U trajectoire"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   backend:
     build: ./backend
@@ -38,7 +38,8 @@ services:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 15s
     volumes:
       - ./backend:/app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
