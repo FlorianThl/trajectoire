@@ -10,12 +10,14 @@ import { CircuitDetail } from "./pages/CircuitDetail"
 import { Maintenance } from "./pages/Maintenance"
 import { BestLaps } from "./pages/BestLaps"
 import { CvMecanique } from "./pages/CvMecanique"
+import { Home } from "./pages/Home"
 import { NotFound } from "./pages/NotFound"
 
 export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

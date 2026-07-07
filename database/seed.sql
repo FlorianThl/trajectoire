@@ -185,6 +185,111 @@ VALUES
     NULL,
     'https://www.circuit-charade.com'
   )
+  (
+    'a0000001-0000-0000-0000-00000000000d',
+    'Circuit de Lohéac',
+    'loheac',
+    'Circuit Breton situe au coeur du rallycross. Tracé technique et sinueux ideal pour l''apprentissage.',
+    'Lohéac',
+    '35550',
+    ST_SetSRID(ST_MakePoint(-1.8760, 47.8700), 4326),
+    1.500, 'permanent', 'mixte',
+    true, true, false,
+    100, false,
+    '{auto,moto}',
+    NULL,
+    'https://www.circuit-loheac.fr'
+  ),
+  (
+    'a0000001-0000-0000-0000-00000000000e',
+    'Circuit d''Albi (Le Sequestre)',
+    'albi',
+    'Circuit technique du Tarn, tracé moderne et sécurisé avec de grandes zones de dégagement.',
+    'Albi',
+    '81990',
+    ST_SetSRID(ST_MakePoint(2.1290, 43.9250), 4326),
+    2.457, 'permanent', 'asphalte',
+    true, true, true,
+    101, true,
+    '{auto,moto}',
+    NULL,
+    'https://www.circuit-albi.com'
+  ),
+  (
+    'a0000001-0000-0000-0000-00000000000f',
+    'Circuit du Laquais',
+    'laquais',
+    'Circuit isérois dans la vallée du Rhône. Très prisé des motards, ambiance familiale.',
+    'Villette-d''Anthon',
+    '38280',
+    ST_SetSRID(ST_MakePoint(5.1170, 45.7860), 4326),
+    1.100, 'permanent', 'graviers',
+    true, false, false,
+    93, true,
+    '{moto}',
+    NULL,
+    'https://www.circuitdelaquais.fr'
+  ),
+  (
+    'a0000001-0000-0000-0000-000000000010',
+    'Circuit de Lédenon',
+    'ledenon',
+    'Circuit gardois en surplomb des gorges du Gardon. Tracé technique avec dénivelé.',
+    'Lédenon',
+    '30210',
+    ST_SetSRID(ST_MakePoint(4.5090, 43.9150), 4326),
+    3.150, 'permanent', 'asphalte',
+    true, true, true,
+    102, true,
+    '{auto,moto}',
+    NULL,
+    'https://www.circuit-ledenon.com'
+  ),
+  (
+    'a0000001-0000-0000-0000-000000000011',
+    'Circuit Pau-Arnos',
+    'pau-arnos',
+    'Circuit palois tracé dans la forêt de la Commune d''Arnos. Tracé sinueux et ombragé.',
+    'Arnos',
+    '64370',
+    ST_SetSRID(ST_MakePoint(-0.5320, 43.4570), 4326),
+    2.500, 'permanent', 'mixte',
+    true, false, true,
+    100, false,
+    '{auto,moto}',
+    NULL,
+    'https://www.pauarnos.com'
+  ),
+  (
+    'a0000001-0000-0000-0000-000000000012',
+    'Circuit de Dijon-Prenois',
+    'dijon-prenois',
+    'Circuit historique de Bourgogne. Tracé rapide avec courbes mythiques.',
+    'Prenois',
+    '21370',
+    ST_SetSRID(ST_MakePoint(4.8950, 47.3600), 4326),
+    3.801, 'permanent', 'asphalte',
+    true, true, true,
+    103, true,
+    '{auto,moto}',
+    NULL,
+    'https://www.circuit-dijon-prenois.com'
+  ),
+  (
+    'a0000001-0000-0000-0000-000000000013',
+    'Circuit de Lure',
+    'lure',
+    'Circuit haut-saônois en pleine nature, parfait pour les roulages en petit comité.',
+    'Lure',
+    '70200',
+    ST_SetSRID(ST_MakePoint(6.4840, 47.6820), 4326),
+    2.000, 'permanent', 'mixte',
+    false, false, false,
+    97, true,
+    '{auto,moto}',
+    NULL,
+    'https://www.circuit-lure.fr'
+  )
 ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================================
@@ -237,3 +342,31 @@ FROM circuits c WHERE c.slug = 'spa-francorchamps';
 INSERT INTO events (circuit_id, organizer_name, organizer_url, start_date, end_date, has_debutant, has_intermediaire, has_confirme, price_base, price_license, booking_url, spots_available, is_active)
 SELECT c.id, 'Moto Passion Track', 'https://motopassion-track.fr', '2026-09-12', '2026-09-12', true, true, true, 109.00, 89.00, 'https://motopassion-track.fr/booking/mas-du-clos-sept', 14, true
 FROM circuits c WHERE c.slug = 'mas-du-clos';
+
+INSERT INTO events (circuit_id, organizer_name, organizer_url, start_date, end_date, has_debutant, has_intermediaire, has_confirme, price_base, price_license, booking_url, spots_available, is_active)
+SELECT c.id, 'RS Trackdays', 'https://rs-trackdays.fr', '2026-08-22', '2026-08-22', true, true, false, 79.00, 59.00, 'https://rs-trackdays.fr/booking/loheac-aout', 20, true
+FROM circuits c WHERE c.slug = 'loheac';
+
+INSERT INTO events (circuit_id, organizer_name, organizer_url, start_date, end_date, has_debutant, has_intermediaire, has_confirme, price_base, price_license, booking_url, spots_available, is_active)
+SELECT c.id, 'M2R Trackdays', 'https://m2r-trackdays.fr', '2026-09-26', '2026-09-26', true, true, true, 149.00, 129.00, 'https://m2r-trackdays.fr/booking/albi-sept', 18, true
+FROM circuits c WHERE c.slug = 'albi';
+
+INSERT INTO events (circuit_id, organizer_name, organizer_url, start_date, end_date, has_debutant, has_intermediaire, has_confirme, price_base, price_license, booking_url, spots_available, is_active)
+SELECT c.id, 'Bike Track Days', 'https://biketrackdays.fr', '2026-07-31', '2026-07-31', true, false, false, 69.00, 49.00, 'https://biketrackdays.fr/booking/laquais-juillet', 10, true
+FROM circuits c WHERE c.slug = 'laquais';
+
+INSERT INTO events (circuit_id, organizer_name, organizer_url, start_date, end_date, has_debutant, has_intermediaire, has_confirme, price_base, price_license, booking_url, spots_available, is_active)
+SELECT c.id, 'Trackday France', 'https://trackday-france.fr', '2026-08-30', '2026-08-30', true, true, true, 189.00, 159.00, 'https://trackday-france.fr/booking/ledenon-aout', 15, true
+FROM circuits c WHERE c.slug = 'ledenon';
+
+INSERT INTO events (circuit_id, organizer_name, organizer_url, start_date, end_date, has_debutant, has_intermediaire, has_confirme, price_base, price_license, booking_url, spots_available, is_active)
+SELECT c.id, 'MotoE Sport', 'https://motoe-sport.fr', '2026-09-05', '2026-09-05', true, true, false, 139.00, 119.00, 'https://motoe-sport.fr/booking/pau-arnos-sept', 12, true
+FROM circuits c WHERE c.slug = 'pau-arnos';
+
+INSERT INTO events (circuit_id, organizer_name, organizer_url, start_date, end_date, has_debutant, has_intermediaire, has_confirme, price_base, price_license, booking_url, spots_available, is_active)
+SELECT c.id, 'M2R Trackdays', 'https://m2r-trackdays.fr', '2026-10-10', '2026-10-11', false, true, true, 229.00, 199.00, 'https://m2r-trackdays.fr/booking/dijon-octobre', 25, true
+FROM circuits c WHERE c.slug = 'dijon-prenois';
+
+INSERT INTO events (circuit_id, organizer_name, organizer_url, start_date, end_date, has_debutant, has_intermediaire, has_confirme, price_base, price_license, booking_url, spots_available, is_active)
+SELECT c.id, 'Moto Passion Track', 'https://motopassion-track.fr', '2026-08-02', '2026-08-02', true, true, true, 89.00, 69.00, 'https://motopassion-track.fr/booking/lure-aout', 8, true
+FROM circuits c WHERE c.slug = 'lure';
