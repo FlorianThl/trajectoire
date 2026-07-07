@@ -6,6 +6,7 @@ export function Garage() {
   const [vehicles, setVehicles] = useState<VehicleRead[]>([])
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [formError, setFormError] = useState("")
   const [form, setForm] = useState({
     vehicle_type: "auto", brand: "", model: "", year: 2020,
     tires: "road", brakes: "stock", noise_level_db: "",
@@ -15,6 +16,7 @@ export function Garage() {
     setForm({ vehicle_type: "auto", brand: "", model: "", year: 2020, tires: "road", brakes: "stock", noise_level_db: "" })
     setEditingId(null)
     setShowForm(false)
+    setFormError("")
   }
 
   function update(field: string, value: string) {
@@ -29,15 +31,21 @@ export function Garage() {
   useEffect(() => { load() }, [])
 
   async function handleSubmit() {
+    setFormError("")
     if (!form.brand || !form.model) {
-      alert("Veuillez renseigner la marque et le modele")
+      setFormError("Veuillez renseigner la marque et le modèle")
+      return
+    }
+    const noise = form.noise_level_db ? Number(form.noise_level_db) : null
+    if (noise !== null && (noise < 80 || noise > 130)) {
+      setFormError("Le niveau sonore doit être compris entre 80 et 130 dB")
       return
     }
     try {
       const payload = {
         ...form,
         year: Number(form.year),
-        noise_level_db: form.noise_level_db ? Number(form.noise_level_db) : null,
+        noise_level_db: noise,
       }
       if (editingId) {
         await api.vehicles.update(editingId, payload)
@@ -47,11 +55,12 @@ export function Garage() {
       resetForm()
       await load()
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erreur lors de l'ajout")
+      setFormError(err instanceof Error ? err.message : "Erreur lors de l'ajout")
     }
   }
 
   async function handleEdit(v: VehicleRead) {
+    setFormError("")
     setForm({
       vehicle_type: v.vehicle_type,
       brand: v.brand,
@@ -88,6 +97,7 @@ export function Garage() {
       {showForm && (
         <div className="card">
           <h2>{editingId ? "Modifier" : "Ajouter"} un véhicule</h2>
+          {formError && <p className="error">{formError}</p>}
           <div className="field-row">
             <label>
               Type

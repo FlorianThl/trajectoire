@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 
 from app.routers import auth, circuits, events, health, lap_records, maintenance, users, vehicles
 
@@ -8,6 +10,15 @@ app = FastAPI(
     description="API de la plateforme Trajectoire — Module Trackdays",
     version="0.1.0",
 )
+
+
+@app.exception_handler(IntegrityError)
+async def integrity_error_handler(request: Request, exc: IntegrityError) -> JSONResponse:
+    detail = str(exc.orig) if exc.orig else "Database constraint violation"
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": detail},
+    )
 
 app.add_middleware(
     CORSMiddleware,
