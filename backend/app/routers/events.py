@@ -41,11 +41,13 @@ async def list_events(
     result = await db.execute(query)
     events = result.scalars().all()
 
-    circuit_ids = {e.circuit_id for e in events}
-    circuits_q = await db.execute(
-        select(Circuit).where(Circuit.id.in_(circuit_ids))
-    )
-    circuits = {c.id: c.name for c in circuits_q.scalars().all()}
+    circuits: dict[uuid.UUID, str] = {}
+    if events:
+        circuit_ids = {e.circuit_id for e in events}
+        circuits_q = await db.execute(
+            select(Circuit).where(Circuit.id.in_(circuit_ids))
+        )
+        circuits = {c.id: c.name for c in circuits_q.scalars().all()}
 
     return [
         EventRead(
