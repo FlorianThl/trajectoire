@@ -15,6 +15,7 @@ from app.models.user import User
 from app.models.vehicle import Vehicle
 from app.models.circuit import Circuit
 from app.models.lap_record import LapRecord
+from app.models.maintenance_log import MaintenanceLog
 from app.schemas.lap import LapRecordCreate, LapRecordRead
 
 router = APIRouter(prefix="/laps", tags=["laps"])
@@ -73,6 +74,12 @@ async def create_lap(
             current_km = float(vehicle.total_track_km) if vehicle.total_track_km else 0
             if circuit.length_km:
                 vehicle.total_track_km = current_km + (data.total_laps_session * float(circuit.length_km))
+
+            maint_q = await db.execute(
+                select(MaintenanceLog).where(MaintenanceLog.vehicle_id == vehicle.id)
+            )
+            for log in maint_q.scalars().all():
+                log.current_laps = (log.current_laps or 0) + data.total_laps_session
 
     parts = data.lap_time.replace(",", ".").split(":")
     try:
