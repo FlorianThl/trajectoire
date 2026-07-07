@@ -9,6 +9,7 @@ import { Circuits } from "./pages/Circuits"
 import { CircuitDetail } from "./pages/CircuitDetail"
 import { Maintenance } from "./pages/Maintenance"
 import { BestLaps } from "./pages/BestLaps"
+import { CvMecanique } from "./pages/CvMecanique"
 import { NotFound } from "./pages/NotFound"
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/circuits" element={<ProtectedRoute><Circuits /></ProtectedRoute>} />
         <Route path="/circuits/:id" element={<ProtectedRoute><CircuitDetail /></ProtectedRoute>} />
         <Route path="/meilleurs-tours" element={<ProtectedRoute><BestLaps /></ProtectedRoute>} />
+        <Route path="/cv-mecanique" element={<ProtectedRoute><CvMecanique /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

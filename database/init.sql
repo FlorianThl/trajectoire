@@ -155,7 +155,8 @@ CREATE TABLE lap_records (
     total_laps_session INTEGER,
     notes           TEXT,
     validated_at    TIMESTAMPTZ DEFAULT NOW(),
-    created_at      TIMESTAMPTZ DEFAULT NOW()
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX idx_laps_user ON lap_records(user_id);
@@ -208,3 +209,5 @@ CREATE TRIGGER trg_events_updated_at
     BEFORE UPDATE ON events FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER trg_maintenance_updated_at
     BEFORE UPDATE ON maintenance_logs FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER trg_lap_records_updated_at
+    BEFORE UPDATE ON lap_records FOR EACH ROW EXECUTE FUNCTION update_updated_at();

@@ -1,9 +1,13 @@
+import csv
+import io
 import uuid
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from fastapi.responses import StreamingResponse
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.database import get_db
 from app.dependencies import get_current_active_user
@@ -11,7 +15,7 @@ from app.models.user import User
 from app.models.vehicle import Vehicle
 from app.models.circuit import Circuit
 from app.models.lap_record import LapRecord
-from app.schemas.maintenance import LapRecordCreate, LapRecordRead
+from app.schemas.lap import LapRecordCreate, LapRecordRead
 
 router = APIRouter(prefix="/laps", tags=["laps"])
 
@@ -109,6 +113,111 @@ async def create_lap(
         created_at=lap.created_at,
     )
     return lap_read
+
+
+@router.get("/stats/progression")
+async def lap_progression_stats(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    result = await db.execute(
+        select(LapRecord).where(LapRecord.user_id == current_user.id)
+        .options(joinedload(LapRecord.circuit))
+        .order_by(LapRecord.created_at.asc())
+    )
+    laps = result.scalars().all()
+
+    circuits_cache: dict[str, str] = {}
+    groups: dict[str, dict] = {}
+    for l in laps:
+        cid = str(l.circuit_id)
+        if cid not in circuits_cache:
+            circuits_cache[cid] = l.circuit.name if l.circuit else cid[:8]
+        if cid not in groups:
+            groups[cid] = {"circuit_id": cid, "circuit_name": circuits_cache[cid], "laps": []}
+        sec = l.lap_time.total_seconds()
+        groups[cid]["laps"].append({
+            "date": l.created_at.strftime("%Y-%m-%d"),
+            "lap_time": str(l.lap_time),
+            "seconds": round(sec, 3),
+        })
+
+    result_list = []
+    for cid, g in groups.items():
+        best = min(g["laps"], key=lambda x: x["seconds"])
+        result_list.append({
+            "circuit_id": cid,
+            "circuit_name": g["circuit_name"],
+            "laps": g["laps"],
+            "best_lap": best["lap_time"],
+            "best_seconds": best["seconds"],
+            "total_laps": len(g["laps"]),
+        })
+    return result_list
+
+
+@router.get("/export/csv")
+async def export_laps_csv(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    result = await db.execute(
+        select(LapRecord).where(LapRecord.user_id == current_user.id)
+        .options(joinedload(LapRecord.circuit), joinedload(LapRecord.vehicle))
+        .order_by(LapRecord.created_at.desc())
+    )
+    laps = result.scalars().all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["circuit", "date", "temps", "vehicule", "tours_session", "notes"])
+    for l in laps:
+        circuit_name = l.circuit.name if l.circuit else str(l.circuit_id)[:8]
+        vehicle_name = f"{l.vehicle.brand} {l.vehicle.model}" if l.vehicle else ""
+        writer.writerow([
+            circuit_name,
+            l.created_at.strftime("%Y-%m-%d"),
+            str(l.lap_time),
+            vehicle_name,
+            l.total_laps_session or "",
+            l.notes or "",
+        ])
+
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=chronos.csv"},
+    )
+
+
+@router.get("/stats/vehicle")
+async def lap_vehicle_stats(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    vehicles_q = await db.execute(
+        select(Vehicle).where(Vehicle.user_id == current_user.id)
+    )
+    vehicles = vehicles_q.scalars().all()
+
+    result_list = []
+    for v in vehicles:
+        count_q = await db.execute(
+            select(func.count(LapRecord.id)).where(
+                LapRecord.vehicle_id == v.id,
+                LapRecord.user_id == current_user.id,
+            )
+        )
+        lap_count = count_q.scalar() or 0
+        result_list.append({
+            "id": str(v.id),
+            "brand": v.brand,
+            "model": v.model,
+            "total_laps": v.total_laps,
+            "total_track_km": float(v.total_track_km) if v.total_track_km else 0,
+            "lap_records_count": lap_count,
+        })
+    return result_list
 
 
 @router.delete("/{lap_id}", status_code=status.HTTP_204_NO_CONTENT)

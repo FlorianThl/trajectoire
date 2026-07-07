@@ -215,6 +215,24 @@ export interface LapRecordCreate {
   notes?: string | null
 }
 
+export interface LapProgressionStats {
+  circuit_id: string
+  circuit_name: string
+  laps: { date: string; lap_time: string; seconds: number }[]
+  best_lap: string
+  best_seconds: number
+  total_laps: number
+}
+
+export interface VehicleStats {
+  id: string
+  brand: string
+  model: string
+  total_laps: number
+  total_track_km: number
+  lap_records_count: number
+}
+
 export const api = {
   auth: {
     login: (data: { email: string; password: string }) =>
@@ -265,7 +283,10 @@ export const api = {
     create: (data: LapRecordCreate) =>
       request<LapRecordRead>("/laps", { method: "POST", body: JSON.stringify(data) }),
     delete: (id: string) => request<void>(`/laps/${id}`, { method: "DELETE" }),
+    progression: () => request<LapProgressionStats[]>("/laps/stats/progression"),
+    exportCsv: () => { window.open(`${API_BASE}/laps/export/csv`, "_blank") },
   },
+  vehicleStats: () => request<VehicleStats[]>("/laps/stats/vehicle"),
   vehicles: {
     list: () => request<VehicleRead[]>("/vehicles"),
     create: (data: VehicleCreate) =>

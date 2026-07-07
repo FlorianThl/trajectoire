@@ -20,6 +20,7 @@ export function Layout() {
             <Link to="/garage">Garage</Link>
             <Link to="/circuits">Circuits</Link>
             <Link to="/meilleurs-tours">Mes chronos</Link>
+            <Link to="/cv-mecanique">CV Mecanique</Link>
             <button onClick={handleLogout} className="btn-link">Deconnexion</button>
           </div>
         )}

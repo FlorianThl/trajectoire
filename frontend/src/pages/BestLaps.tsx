@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
-import { api, type LapRecordRead, type CircuitSearchResult, type VehicleRead } from "../services/api"
+import { api, type LapRecordRead, type CircuitSearchResult, type VehicleRead, type LapProgressionStats } from "../services/api"
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
 
 function parseLapTime(t: string): number {
   const parts = t.replace(",", ".").split(":").map(Number)
@@ -12,6 +13,7 @@ export function BestLaps() {
   const [laps, setLaps] = useState<LapRecordRead[]>([])
   const [circuits, setCircuits] = useState<CircuitSearchResult[]>([])
   const [vehicles, setVehicles] = useState<VehicleRead[]>([])
+  const [progression, setProgression] = useState<LapProgressionStats[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({
@@ -27,14 +29,16 @@ export function BestLaps() {
   async function load() {
     setLoading(true)
     try {
-      const [l, c, v] = await Promise.all([
+      const [l, c, v, p] = await Promise.all([
         api.laps.list(),
         api.circuits.search({}),
         api.vehicles.list(),
+        api.laps.progression(),
       ])
       setLaps(l)
       setCircuits(c)
       setVehicles(v)
+      setProgression(p)
     } finally {
       setLoading(false)
     }
@@ -105,6 +109,7 @@ export function BestLaps() {
       <div className="page-header">
         <h1>Meilleurs tours</h1>
         <button onClick={() => { resetForm(); setShowForm(true) }} className="btn">+ Ajouter un chrono</button>
+        <button onClick={api.laps.exportCsv} className="btn secondary">Exporter CSV</button>
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -167,6 +172,29 @@ export function BestLaps() {
               </div>
             ))}
           </div>
+
+          {progression.length > 0 && (
+            <>
+              <h2 style={{ marginTop: "2rem" }}>Progression par circuit</h2>
+              <div className="progression-grid">
+                {progression.map((p) => (
+                  <div key={p.circuit_id} className="card">
+                    <h3>{p.circuit_name}</h3>
+                    <p>Meilleur temps : <strong>{p.best_lap}</strong></p>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart data={p.laps}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                        <YAxis domain={["dataMin - 2", "dataMax + 2"]} tick={{ fontSize: 11 }} />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="seconds" stroke="#e63946" dot={{ r: 4 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
           <h2 style={{ marginTop: "2rem" }}>Tous les chronos</h2>
           <div className="laps-list">

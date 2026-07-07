@@ -35,3 +35,7 @@ class TestLaps:
             headers=headers,
         )
         assert resp.status_code == 404
+
+    async def test_progression_requires_auth(self, async_client):
+        resp = await async_client.get("/laps/stats/progression")
+        assert resp.status_code == 403
